@@ -264,7 +264,7 @@ class _LobbyState extends State<Lobby> {
           Wrap(spacing: 8, children: [
             for (final s in sp.times)
               ChoiceChip(
-                label: Text(s >= 120 && s % 60 == 0 ? t('min', {'n': s ~/ 60}) : t('sec', {'n': s})),
+                label: Text(s <= 0 ? t('noTimer') : (s >= 120 && s % 60 == 0 ? t('min', {'n': s ~/ 60}) : t('sec', {'n': s}))),
                 selected: secs == s,
                 onSelected: (_) => setState(() => secs = s),
               ),
