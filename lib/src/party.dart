@@ -193,8 +193,10 @@ class _LobbyState extends State<Lobby> {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+    return Column(children: [
+      Expanded(
+        child: ListView(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
       children: [
         Center(child: Text(widget.emoji, style: const TextStyle(fontSize: 54))),
         _label(t('players')),
@@ -292,15 +294,20 @@ class _LobbyState extends State<Lobby> {
               onTap: _editCustom,
             ),
           ),
-        const SizedBox(height: 18),
-        FilledButton.icon(
+      ],
+        ),
+      ),
+      // Başlat düğmesi her zaman görünür kalır (küçük ekranlarda da).
+      Padding(
+        padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+        child: FilledButton.icon(
           style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(56), backgroundColor: scheme.primary),
           onPressed: _start,
           icon: const Icon(Icons.play_arrow),
           label: Text(t('start'), style: const TextStyle(fontSize: 18)),
         ),
-      ],
-    );
+      ),
+    ]);
   }
 }
 
