@@ -1,5 +1,6 @@
 import 'core.dart';
 import 'kinds/fun.dart';
+import 'kinds/hot.dart';
 import 'kinds/pen.dart';
 import 'kinds/quiz.dart';
 import 'kinds/social.dart';
@@ -24,6 +25,9 @@ const Map<String, PartiKind> kPartiKinds = {
   'hizli-parmak': ReflexKind(),
   'kirik-kalem': BrokenPenKind(),
   'isi-olcer': HeatDialKind(),
+  'bomba-kelime': BombKind(),
+  'bes-saniye': FiveKind(),
+  'kim-en-cok': MostKind(),
 };
 
 PartiRules partiRulesFor(String gameId, String kind) => partiRules(gameId, kPartiKinds[kind]!);

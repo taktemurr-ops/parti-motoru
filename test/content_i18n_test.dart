@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:parti_motoru/src/data/cards.dart';
+import 'package:parti_motoru/src/data/party2.dart';
 import 'package:parti_motoru/src/data/spectra.dart';
 import 'package:parti_motoru/src/party.dart';
 import 'package:studio_core/core/strings.dart';
@@ -76,5 +77,16 @@ void main() {
       }
     }
     expect(kSpectra.first.left('fr'), kSpectra.first.l[4]);
+  });
+
+  test('Beş Saniyede Üç konuları ve Kim En Çok? soruları 33 dilde', () {
+    expect(kFiveTopics.length, greaterThanOrEqualTo(40));
+    expect(kMostLikely.length, greaterThanOrEqualTo(30));
+    for (final l in [...kFiveTopics, ...kMostLikely]) {
+      _all33(l.t, 'satır ${l.t[1]}');
+      expect(l.tier, inInclusiveRange(0, 2));
+    }
+    expect(kFiveTopics.where((l) => l.tier == 0).length, greaterThanOrEqualTo(12));
+    expect(kMostLikely.where((l) => l.tier == 0).length, greaterThanOrEqualTo(8));
   });
 }
