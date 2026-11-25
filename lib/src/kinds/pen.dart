@@ -468,7 +468,10 @@ class HeatDialKind extends PartiKind {
     }
     var kids = 0;
     for (final sp in kSpectra) {
-      if (sp.trL == sp.trR || sp.enL == sp.enR) return false;
+      if (sp.l.length != 33 || sp.r.length != 33) return false;
+      for (var k = 0; k < 33; k++) {
+        if (sp.l[k].isEmpty || sp.r[k].isEmpty || sp.l[k] == sp.r[k]) return false;
+      }
       if (sp.tier == 0) kids++;
     }
     return kids >= 20 && p.n >= 3 && p.n <= 5;

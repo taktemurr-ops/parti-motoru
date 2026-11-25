@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:studio_core/app/services/audio.dart';
+import 'package:studio_core/core/strings.dart';
 
 import 'core.dart';
 import 'data/cards.dart';
@@ -591,8 +592,14 @@ class FinalBoard extends StatelessWidget {
   }
 }
 
-/// Kartın ekrandaki adı: Türkçe ya da İngilizce (diğer dillerde emoji öne çıkar, ad İngilizce).
-String cardLabel(String lang, PCard c) => lang == 'tr' ? c.tr : c.en;
+/// Kartın ekrandaki adı, oyuncunun dilinde (33 dil).
+String cardLabel(String lang, PCard c) => Strings.pick(c.names, lang);
+
+/// [Strings.languages] sırasındaki dil listelerinden bu dilinkini seçer (yoksa İngilizce).
+T langItem<T>(List<T> byLang, String lang) {
+  final i = Strings.languages.indexOf(lang);
+  return i >= 0 && i < byLang.length ? byLang[i] : byLang[1];
+}
 
 /// Kart kategorisinin bu dildeki adı.
 String catLabel(String lang, String cat) => pt(lang, 'cat_$cat');

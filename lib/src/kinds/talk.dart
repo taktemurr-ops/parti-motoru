@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:studio_core/app/services/audio.dart';
 import 'package:studio_core/core/rng.dart';
+import 'package:studio_core/core/strings.dart';
 
 import '../core.dart';
 import '../data/cards.dart';
@@ -43,14 +44,19 @@ class TabuKind extends PartiKind {
 
   @override
   bool check(PDeck p) {
-    if (kTabuTr.length != kTabuEn.length) return false;
+    if (kTabu.length != Strings.languages.length) return false;
     if (p.a.length != kTabuTr.length || !uniqIn(p.a, kTabuTr.length)) return false;
+    for (final deck in kTabu) {
+      if (deck.length != kTabuTr.length) return false;
+    }
     for (final i in p.a) {
-      final c = kTabuTr[i], e = kTabuEn[i];
-      if (c.no.length != 4 || e.no.length != 4 || c.tier != e.tier || c.emoji != e.emoji) return false;
-      // Yasaklı sözcükler kartın kendisi olamaz ve birbirini yinelemez.
-      if (c.no.contains(c.word) || e.no.contains(e.word)) return false;
-      if (c.no.toSet().length != 4 || e.no.toSet().length != 4) return false;
+      final c = kTabuTr[i];
+      for (final deck in kTabu) {
+        final e = deck[i];
+        if (e.no.length != 4 || e.tier != c.tier || e.emoji != c.emoji || e.word.isEmpty) return false;
+        // Yasaklı sözcükler kartın kendisi olamaz ve birbirini yinelemez.
+        if (e.no.contains(e.word) || e.no.toSet().length != 4) return false;
+      }
     }
     return p.n >= 1 && p.n <= 3;
   }
@@ -129,7 +135,7 @@ class _CardTurnsState extends State<CardTurns> {
   void _start(PSettings v) {
     final List<PlayCard> deal;
     if (widget.mode == TurnMode.tabu) {
-      final src = p.lang == 'tr' ? kTabuTr : kTabuEn;
+      final src = langItem(kTabu, p.lang);
       final base = [
         for (final i in p.deck.a)
           if (src[i].tier <= v.age) PlayCard(src[i].emoji, src[i].word, forbidden: src[i].no)

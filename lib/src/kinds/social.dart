@@ -567,31 +567,32 @@ class TruthKind extends PartiKind {
 
   @override
   bool check(PDeck p) =>
-      kTruthTr.length == kTruthEn.length &&
-      kDareTr.length == kDareEn.length &&
+      kTruth.length == Strings.languages.length &&
+      kDare.length == Strings.languages.length &&
       p.a.length == kTruthTr.length &&
       uniqIn(p.a, kTruthTr.length) &&
       p.b.length == kDareTr.length &&
       uniqIn(p.b, kDareTr.length) &&
       p.n >= 2 &&
       p.n <= 3 &&
-      _tiersMatch(kTruthTr, kTruthEn) &&
-      _tiersMatch(kDareTr, kDareEn);
+      kTruth.every((l) => _tiersMatch(kTruthTr, l)) &&
+      kDare.every((l) => _tiersMatch(kDareTr, l));
 
   @override
   Widget build(PartiPlay play) => TruthView(play: play);
 }
 
 bool _tiersMatch(List<PPrompt> a, List<PPrompt> b) {
+  if (a.length != b.length) return false;
   for (var i = 0; i < a.length; i++) {
     if (a[i].tier != b[i].tier || a[i].text.isEmpty || b[i].text.isEmpty) return false;
   }
   return true;
 }
 
-/// Görev listesi: yaş paketine uyanlar, bu dilde (TR ya da EN), kendi görevlerle harman.
+/// Görev listesi: yaş paketine uyanlar, oyuncunun dilinde, kendi görevlerle harman.
 List<String> dareList(PartiPlay p, PSettings v) {
-  final src = p.lang == 'tr' ? kDareTr : kDareEn;
+  final src = langItem(kDare, p.lang);
   final out = [for (final i in p.deck.b) if (src[i].tier <= v.age) src[i].text];
   return [
     for (var i = 0; i < out.length; i++) ...[
@@ -626,7 +627,7 @@ class _TruthViewState extends State<TruthView> {
   int get player => turn % s!.count;
 
   void _start(PSettings v) {
-    final src = p.lang == 'tr' ? kTruthTr : kTruthEn;
+    final src = langItem(kTruth, p.lang);
     setState(() {
       s = v;
       truths = [for (final i in p.deck.a) if (src[i].tier <= v.age) src[i].text];
