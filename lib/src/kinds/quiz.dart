@@ -4,6 +4,7 @@ import 'package:studio_core/core/rng.dart';
 import 'package:studio_core/core/strings.dart';
 
 import '../core.dart';
+import '../studio_chrome.dart';
 import '../data/cards.dart';
 import '../party.dart';
 
@@ -126,8 +127,8 @@ class _NameCityViewState extends State<NameCityView> with Clock {
                 width: 170,
                 height: 170,
                 alignment: Alignment.center,
-                decoration: BoxDecoration(color: PColors.paper, borderRadius: BorderRadius.circular(32), border: Border.all(color: PColors.line, width: 4)),
-                child: Text(shown, style: const TextStyle(fontSize: 96, fontWeight: FontWeight.w900, color: PColors.ink)),
+                decoration: partyCard(context, radius: 32, width: 4),
+                child: Text(shown, style: const TextStyle(fontSize: 96, fontWeight: FontWeight.w900, color: Colors.white)),
               ),
               const SizedBox(height: 24),
               SizedBox(width: 260, child: BigBtn(label: t('drawLetter'), icon: Icons.casino, color: PColors.bad, onTap: rolling ? null : _roll)),
@@ -154,9 +155,13 @@ class _NameCityViewState extends State<NameCityView> with Clock {
               Container(
                 margin: const EdgeInsets.symmetric(vertical: 4),
                 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                decoration: BoxDecoration(color: PColors.paper, borderRadius: BorderRadius.circular(14), border: Border.all(color: PColors.line)),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.07),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: StudioLook.of(context).accent.withValues(alpha: 0.45), width: 1.2),
+                ),
                 child: Text(Strings.pick(kIsimCats[c], p.lang),
-                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: PColors.ink)),
+                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: Colors.white)),
               ),
             const SizedBox(height: 14),
             BigBtn(label: t('stopBtn'), icon: Icons.pan_tool, color: PColors.bad, onTap: () => setState(() => phase = 2)),
@@ -486,7 +491,7 @@ class _FamilyQuizViewState extends State<FamilyQuizView> with Clock {
         border: Border.all(color: solvedBy == i ? PColors.good : c, width: solvedBy == i ? 4 : 2),
       ),
       child: Column(children: [
-        Text('${v.names[i]} · ${scores[i]}', maxLines: 1, style: TextStyle(fontWeight: FontWeight.w800, color: c)),
+        Text('${v.names[i]} · ${scores[i]}', maxLines: 1, style: TextStyle(fontWeight: FontWeight.w800, color: studioLift(c))),
         const SizedBox(height: 4),
         Expanded(
           child: Row(children: [
@@ -754,7 +759,7 @@ class _EmojiClueViewState extends State<EmojiClueView> {
       ),
       Padding(
         padding: const EdgeInsets.fromLTRB(12, 6, 12, 0),
-        child: Text(t('clueNote'), textAlign: TextAlign.center, style: TextStyle(color: tc, fontWeight: FontWeight.w700)),
+        child: Text(t('clueNote'), textAlign: TextAlign.center, style: TextStyle(color: studioLift(tc), fontWeight: FontWeight.w700)),
       ),
       Expanded(child: Padding(padding: const EdgeInsets.all(6), child: _grid(key: false))),
       Padding(

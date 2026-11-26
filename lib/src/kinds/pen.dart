@@ -5,6 +5,7 @@ import 'package:studio_core/app/services/audio.dart';
 import 'package:studio_core/core/rng.dart';
 
 import '../core.dart';
+import '../studio_chrome.dart';
 import '../data/spectra.dart';
 import '../party.dart';
 import 'talk.dart' show emojiDeck, emojiDeckOk;
@@ -222,17 +223,17 @@ class _BrokenPenViewState extends State<BrokenPenView> {
         child: Container(
           width: double.infinity,
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-          decoration: BoxDecoration(color: PColors.paper, borderRadius: BorderRadius.circular(16), border: Border.all(color: pc, width: 2)),
+          decoration: partyCard(context, edge: pc, radius: 16, width: 2),
           child: Row(children: [
             if (step == 0 && prompt.emoji.isNotEmpty) Text(prompt.emoji, style: const TextStyle(fontSize: 30)),
             const SizedBox(width: 8),
             Expanded(
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(t('drawThis'), style: const TextStyle(fontSize: 13, color: Color(0xFF7A6E5D))),
+                Text(t('drawThis'), style: const TextStyle(fontSize: 13, color: kStudioSubtle)),
                 Text(seen,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: PColors.ink)),
+                    style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: Colors.white)),
               ]),
             ),
           ]),
