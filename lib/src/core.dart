@@ -11,6 +11,7 @@ import 'package:studio_core/core/rng.dart';
 import 'package:studio_core/core/stats.dart';
 
 import 'texts.dart';
+import 'studio_chrome.dart';
 
 /// Bir parti oyununun bölümü: tohumlanmış deste ve tur planı.
 /// [a] ana liste (kart sırası, ızgara...), [b] yardımcı liste,
@@ -143,8 +144,12 @@ class PartiStage extends StatelessWidget {
   final PartiRules rules;
   const PartiStage({super.key, required this.ctx, required this.rules});
 
+  /// Motorun bütün arayüzü (paneller, pencereler, düğmeler) onaylı koyu
+  /// tasarımda; tahta çizimleri kendi renklerini korur.
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => StudioChrome(child: Builder(builder: _build));
+
+  Widget _build(BuildContext context) {
     final lv = ctx.generated.puzzle as PLevel;
     return rules.kind.build(PartiPlay(ctx: ctx, deck: lv.deck, d: lv.d, seed: ctx.spec.seed));
   }
