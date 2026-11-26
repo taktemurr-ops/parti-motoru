@@ -751,11 +751,36 @@ class _HeatDialViewState extends State<HeatDialView> {
   Widget build(BuildContext context) {
     final v = s;
     if (v == null) {
-      Widget chip(int m, String key) => ChoiceChip(
-            label: Text(t(key), maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
-            selected: mode == m,
-            onSelected: (_) => setState(() => mode = m),
-          );
+      // Seçim hapı: uzun mod adı iki satıra iner ve hap yazıyla uzar
+      // (ChoiceChip tek satır yüksekliğinde kalıp ikinci satırı kesiyordu).
+      Widget chip(int m, String key) {
+        final sel = mode == m;
+        final cs = Theme.of(context).colorScheme;
+        return Semantics(
+          button: true,
+          selected: sel,
+          child: Material(
+            color: sel ? cs.secondaryContainer : Colors.transparent,
+            shape: StadiumBorder(side: BorderSide(color: sel ? cs.secondary : cs.outline)),
+            child: InkWell(
+              customBorder: const StadiumBorder(),
+              onTap: () => setState(() => mode = m),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                child: Row(mainAxisSize: MainAxisSize.min, children: [
+                  if (sel) Padding(padding: const EdgeInsetsDirectional.only(end: 6), child: Icon(Icons.check, size: 18, color: cs.onSecondaryContainer)),
+                  Flexible(
+                    child: Text(t(key),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: sel ? cs.onSecondaryContainer : null)),
+                  ),
+                ]),
+              ),
+            ),
+          ),
+        );
+      }
       return Column(children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(8, 6, 8, 0),
