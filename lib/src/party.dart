@@ -228,7 +228,9 @@ class _LobbyState extends State<Lobby> {
             ActionChip(
               avatar: CircleAvatar(
                 backgroundColor: teams ? PColors.teams[i % 2] : PColors.player(i),
-                child: Text('${i + 1}', style: const TextStyle(color: Colors.white, fontSize: 11)),
+                child: Text('${i + 1}',
+                    style: TextStyle(
+                        color: pOn(teams ? PColors.teams[i % 2] : PColors.player(i)), fontSize: 11, fontWeight: FontWeight.w800)),
               ),
               label: Text(names[i]),
               tooltip: t('rename'),
