@@ -8,6 +8,7 @@ import 'package:studio_core/core/strings.dart';
 import 'core.dart';
 import 'data/cards.dart';
 import 'texts.dart';
+import 'studio_chrome.dart';
 
 /// Lobide seçilen ayarlar.
 class PSettings {
@@ -188,12 +189,11 @@ class _LobbyState extends State<Lobby> {
 
   Widget _label(String s) => Padding(
         padding: const EdgeInsets.fromLTRB(4, 14, 4, 6),
-        child: Text(s, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15)),
+        child: Text(s, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: Colors.white)),
       );
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
     return Column(children: [
       Expanded(
         child: ListView(
@@ -201,7 +201,10 @@ class _LobbyState extends State<Lobby> {
       children: [
         Center(child: Text(widget.emoji, style: const TextStyle(fontSize: 54))),
         _label(t('players')),
-        Row(children: [
+        StudioPanel(
+          margin: EdgeInsets.zero,
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+          child: Row(children: [
           IconButton.filledTonal(
             tooltip: '−',
             onPressed: names.length > sp.minP ? () => _setCount(names.length - 1) : null,
@@ -209,7 +212,7 @@ class _LobbyState extends State<Lobby> {
           ),
           Expanded(
             child: Center(
-              child: Text('${names.length}', style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w800)),
+              child: Text('${names.length}', style: TextStyle(fontSize: 30, fontWeight: FontWeight.w900, color: StudioLook.of(context).number)),
             ),
           ),
           IconButton.filledTonal(
@@ -218,6 +221,7 @@ class _LobbyState extends State<Lobby> {
             icon: const Icon(Icons.add),
           ),
         ]),
+        ),
         const SizedBox(height: 8),
         Wrap(spacing: 8, runSpacing: 8, children: [
           for (var i = 0; i < names.length; i++)
@@ -298,21 +302,23 @@ class _LobbyState extends State<Lobby> {
       ],
         ),
       ),
-      // Başlat düğmesi her zaman görünür kalır (küçük ekranlarda da).
+      // Başlat düğmesi her zaman görünür kalır (küçük ekranlarda da):
+      // onaylı tasarımın büyük turuncu "Hemen Oyna" düğmesi.
       Padding(
         padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
-        child: FilledButton.icon(
-          style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(56), backgroundColor: scheme.primary),
-          onPressed: _start,
-          icon: const Icon(Icons.play_arrow),
-          label: Text(t('start'), style: const TextStyle(fontSize: 18)),
-        ),
+        child: StudioButton.hot(label: t('start'), icon: Icons.play_arrow, onPressed: _start),
       ),
     ]);
   }
 }
 
 String teamLetter(int t) => t == 0 ? 'A' : 'B';
+
+/// Renkli zemin üstünde en okunur yazı rengi (beyaz ya da koyu mürekkep).
+Color pOn(Color bg) {
+  final l = bg.computeLuminance();
+  return 1.05 / (l + 0.05) >= (l + 0.05) / (PColors.ink.computeLuminance() + 0.05) ? Colors.white : PColors.ink;
+}
 
 /// "Telefonu ver" ekranı: gizli bilgi göstermeden önce sıradaki kişiyi çağırır.
 class PassGate extends StatelessWidget {
@@ -334,7 +340,7 @@ class PassGate extends StatelessWidget {
             radius: 44,
             backgroundColor: color,
             child: Text(name.isEmpty ? '?' : String.fromCharCode(name.runes.first).toUpperCase(),
-                style: const TextStyle(fontSize: 40, color: Colors.white, fontWeight: FontWeight.w800)),
+                style: TextStyle(fontSize: 40, color: pOn(color), fontWeight: FontWeight.w800)),
           ),
           const SizedBox(height: 16),
           Text(pt(lang, 'passTo', {'n': name}),
@@ -345,7 +351,7 @@ class PassGate extends StatelessWidget {
           ],
           const SizedBox(height: 22),
           FilledButton.icon(
-            style: FilledButton.styleFrom(minimumSize: const Size(220, 54), backgroundColor: color),
+            style: FilledButton.styleFrom(minimumSize: const Size(220, 54), backgroundColor: color, foregroundColor: pOn(color)),
             onPressed: onReady,
             icon: const Icon(Icons.visibility),
             label: Text(pt(lang, 'ready'), style: const TextStyle(fontSize: 18)),
@@ -433,8 +439,8 @@ class BigBtn extends StatelessWidget {
       child: FilledButton(
         style: FilledButton.styleFrom(
           backgroundColor: color,
-          foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+          foregroundColor: pOn(color),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(height / 2)),
           padding: const EdgeInsets.symmetric(horizontal: 8),
         ),
         onPressed: onTap,
@@ -463,33 +469,35 @@ class CardFace extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final s = sub;
+    final look = StudioLook.of(context);
+    // Onaylı tasarımın kartı: paletin degradesi, vurgu (ya da takım) kenarı.
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: PColors.paper,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: edge ?? PColors.line, width: 3),
-        boxShadow: const [BoxShadow(color: Color(0x33000000), blurRadius: 10, offset: Offset(0, 4))],
+        gradient: look.tile,
+        borderRadius: BorderRadius.circular(26),
+        border: Border.all(color: edge ?? look.accent.withValues(alpha: 0.7), width: 3),
+        boxShadow: [BoxShadow(color: (edge ?? look.accent).withValues(alpha: 0.30), blurRadius: 18, offset: const Offset(0, 6))],
       ),
       child: Column(mainAxisSize: MainAxisSize.min, children: [
         if (emoji.isNotEmpty) Text(emoji, style: const TextStyle(fontSize: 76)),
         if (s != null)
-          Text(s, style: const TextStyle(color: Color(0xFF7A6E5D), fontSize: 14, fontWeight: FontWeight.w600)),
+          Text(s, style: const TextStyle(color: kStudioSubtle, fontSize: 14, fontWeight: FontWeight.w700)),
         const SizedBox(height: 4),
         FittedBox(
           fit: BoxFit.scaleDown,
           child: Text(label,
               textAlign: TextAlign.center,
-              style: const TextStyle(color: PColors.ink, fontSize: 34, fontWeight: FontWeight.w900)),
+              style: const TextStyle(color: Colors.white, fontSize: 34, fontWeight: FontWeight.w900)),
         ),
         if (forbidden.isNotEmpty) ...[
-          const Divider(height: 22),
+          const Divider(height: 22, color: Colors.white24),
           for (final f in forbidden)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 2),
               child: Text(f,
-                  style: const TextStyle(color: PColors.bad, fontSize: 21, fontWeight: FontWeight.w700),
+                  style: const TextStyle(color: Color(0xFFFF8A78), fontSize: 21, fontWeight: FontWeight.w800),
                   textAlign: TextAlign.center),
             ),
         ],
@@ -517,14 +525,15 @@ class ScoreList extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
             color: colors[i].withValues(alpha: i == highlight ? 0.32 : 0.14),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: colors[i].withValues(alpha: i == highlight ? 0.9 : 0.45), width: 1.2),
           ),
           child: Row(children: [
             CircleAvatar(radius: 9, backgroundColor: colors[i]),
             const SizedBox(width: 10),
             Expanded(child: Text(names[i], maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 16))),
             if (scores[i] == best && best > 0) const Text('👑 '),
-            Text('${scores[i]}', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
+            Text('${scores[i]}', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: Colors.white)),
           ]),
         ),
     ]);
@@ -540,20 +549,24 @@ class PBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
+    final look = StudioLook.of(context);
     return Container(
       margin: const EdgeInsets.fromLTRB(8, 4, 8, 0),
       padding: const EdgeInsets.symmetric(horizontal: 12),
       height: 46,
-      decoration: BoxDecoration(color: scheme.surface.withValues(alpha: 0.92), borderRadius: BorderRadius.circular(16)),
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.28),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: look.accent.withValues(alpha: 0.45), width: 1.2),
+      ),
       child: Row(children: [
-        if (left.isNotEmpty) Text(left, style: const TextStyle(fontWeight: FontWeight.w800)),
+        if (left.isNotEmpty) Text(left, style: TextStyle(fontWeight: FontWeight.w900, color: look.number)),
         const SizedBox(width: 8),
         Expanded(
           child: FittedBox(
             fit: BoxFit.scaleDown,
             alignment: AlignmentDirectional.centerStart,
-            child: Text(status, maxLines: 1),
+            child: Text(status, maxLines: 1, style: const TextStyle(fontWeight: FontWeight.w700, color: kStudioSubtle)),
           ),
         ),
         ...extra,
@@ -577,7 +590,7 @@ class FinalBoard extends StatelessWidget {
       const Center(child: Text('🏆', style: TextStyle(fontSize: 64))),
       const SizedBox(height: 6),
       Center(
-        child: Text(play.t('results'), style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900)),
+        child: StudioSheetTitle(play.t('results'), icon: Icons.emoji_events_rounded, iconColor: StudioLook.gold),
       ),
       const SizedBox(height: 12),
       ScoreList(names: names, scores: scores, colors: colors),
