@@ -131,28 +131,17 @@ class _LobbyState extends State<Lobby> {
     widget.play.sfx(Sfx.tap);
   }
 
-  Future<String?> _ask(String title, String initial, {bool multi = false}) async {
-    final c = TextEditingController(text: initial);
-    final r = await showDialog<String>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(title),
-        content: TextField(
-          controller: c,
-          autofocus: true,
-          maxLines: multi ? 8 : 1,
-          maxLength: multi ? 4000 : 18,
-          decoration: InputDecoration(hintText: multi ? t('customHint') : null),
+  Future<String?> _ask(String title, String initial, {bool multi = false}) => showDialog<String>(
+        context: context,
+        builder: (ctx) => _AskDialog(
+          title: title,
+          initial: initial,
+          multi: multi,
+          hint: multi ? t('customHint') : null,
+          cancel: t('cancel'),
+          save: t('save'),
         ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(t('cancel'))),
-          FilledButton(onPressed: () => Navigator.pop(ctx, c.text), child: Text(t('save'))),
-        ],
-      ),
-    );
-    c.dispose();
-    return r;
-  }
+      );
 
   Future<void> _rename(int i) async {
     final r = await _ask(t('rename'), names[i]);
@@ -312,6 +301,54 @@ class _LobbyState extends State<Lobby> {
       ),
     ]);
   }
+}
+
+/// Ad / kendi kelimeler penceresi. Denetleyici pencereyle birlikte yaşar:
+/// kapanış canlandırması bitmeden atılmaz.
+class _AskDialog extends StatefulWidget {
+  final String title;
+  final String initial;
+  final bool multi;
+  final String? hint;
+  final String cancel;
+  final String save;
+  const _AskDialog({
+    required this.title,
+    required this.initial,
+    required this.multi,
+    required this.hint,
+    required this.cancel,
+    required this.save,
+  });
+
+  @override
+  State<_AskDialog> createState() => _AskDialogState();
+}
+
+class _AskDialogState extends State<_AskDialog> {
+  late final TextEditingController c = TextEditingController(text: widget.initial);
+
+  @override
+  void dispose() {
+    c.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => AlertDialog(
+        title: Text(widget.title),
+        content: TextField(
+          controller: c,
+          autofocus: true,
+          maxLines: widget.multi ? 8 : 1,
+          maxLength: widget.multi ? 4000 : 18,
+          decoration: InputDecoration(hintText: widget.hint),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: Text(widget.cancel)),
+          FilledButton(onPressed: () => Navigator.pop(context, c.text), child: Text(widget.save)),
+        ],
+      );
 }
 
 String teamLetter(int t) => t == 0 ? 'A' : 'B';
