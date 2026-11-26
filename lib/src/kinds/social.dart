@@ -520,7 +520,7 @@ class _SpyViewState extends State<SpyView> {
           Wrap(spacing: 8, runSpacing: 8, alignment: WrapAlignment.center, children: [
             for (var i = 0; i < kPlaces.length; i++)
               ActionChip(
-                avatar: Text(kPlaces[i].emoji),
+                avatar: FittedBox(child: Text(kPlaces[i].emoji)),
                 label: Text(placeName(p.lang, i)),
                 onPressed: () => i == place ? _spyWins() : _townWins(),
               ),

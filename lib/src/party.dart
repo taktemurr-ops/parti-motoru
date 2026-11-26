@@ -271,7 +271,7 @@ class _LobbyState extends State<Lobby> {
           Wrap(spacing: 8, children: [
             for (var a = 0; a < 3; a++)
               ChoiceChip(
-                avatar: Text(const ['🧸', '🏡', '🎉'][a]),
+                avatar: FittedBox(child: Text(const ['🧸', '🏡', '🎉'][a])),
                 label: Text(t(const ['ageKids', 'ageFamily', 'ageAll'][a])),
                 selected: age == a,
                 onSelected: (_) => setState(() => age = a),
