@@ -510,24 +510,32 @@ class _HeatDialViewState extends State<HeatDialView> {
   List<int> scores = const [0, 0];
   int needle = 50;
   int? side;
+
+  /// 0 takım düellosu, 1 Ayar Tuttur (herkes kendi iğnesini ayarlar).
+  int mode = 0;
+  List<int> pScores = const [];
+  Map<int, int> needles = {};
+  int gIdx = 0;
   int last = 0;
   bool newCardUsed = false;
 
   PartiPlay get p => widget.play;
   String t(String k, [Map<String, Object> a = const {}]) => p.t(k, a);
 
-  int get rounds => 2 * p.deck.n;
+  int get rounds => mode == 1 ? s!.count : 2 * p.deck.n;
   int get team => round % 2;
   int get target => p.deck.b[round % p.deck.b.length];
   PSpectrum get card => cards[ci % cards.length];
 
   int get giver {
+    if (mode == 1) return round % s!.count;
     final m = s!.members(team);
     return m[(round ~/ 2) % m.length];
   }
 
   void _start(PSettings v) => setState(() {
         s = v;
+        pScores = List.filled(v.count, 0);
         cards = [for (final i in p.deck.a) if (kSpectra[i].tier <= v.age) kSpectra[i]];
         if (cards.isEmpty) cards = [for (final i in p.deck.a) kSpectra[i]];
       });
@@ -547,7 +555,31 @@ class _HeatDialViewState extends State<HeatDialView> {
     });
   }
 
+  List<int> get guessers => [for (var i = 0; i < s!.count; i++) if (i != giver) i];
+
+  void _lockMine() => setState(() {
+        needles[guessers[gIdx]] = needle;
+        gIdx++;
+        needle = 50;
+        if (gIdx >= guessers.length) {
+          var total = 0;
+          for (final e in needles.entries) {
+            final pts = dialPoints(target, e.value);
+            pScores[e.key] += pts;
+            total += pts;
+          }
+          // İpucu veren, tahmin edenlerin ortalaması kadar puan alır.
+          pScores[giver] += total ~/ guessers.length;
+          p.sfx(total > 0 ? Sfx.win : Sfx.lose);
+          phase = 8;
+        } else {
+          phase = 6;
+        }
+      });
+
   void _next() => setState(() {
+        needles = {};
+        gIdx = 0;
         round++;
         ci++;
         needle = 50;
@@ -571,7 +603,7 @@ class _HeatDialViewState extends State<HeatDialView> {
     if (nv != needle) setState(() => needle = nv);
   }
 
-  void _paint(Canvas c, {required bool showTarget, required bool showNeedle}) {
+  void _paint(Canvas c, {required bool showTarget, required bool showNeedle, List<(int, Color)> extra = const []}) {
     // Isı şeridi: soğuk maviden sıcak mercana.
     const steps = 50;
     for (var i = 0; i < steps; i++) {
@@ -602,6 +634,11 @@ class _HeatDialViewState extends State<HeatDialView> {
     }
     c.drawArc(Rect.fromCircle(center: const Offset(_cx, _cy), radius: _rad), math.pi, math.pi, false, stroke(PColors.ink, 8));
     c.drawLine(const Offset(_cx - _rad, _cy), const Offset(_cx + _rad, _cy), stroke(PColors.ink, 8));
+    for (final (v, col) in extra) {
+      final tip = _at(v, _rad - 30);
+      c.drawLine(const Offset(_cx, _cy), tip, stroke(col, 10));
+      c.drawCircle(tip, 18, fill(col));
+    }
     if (showNeedle) {
       final tip = _at(needle, _rad - 20);
       c.drawLine(const Offset(_cx, _cy), tip, stroke(PColors.ink, 14));
@@ -629,13 +666,13 @@ class _HeatDialViewState extends State<HeatDialView> {
     );
   }
 
-  Widget _dial({required bool target, required bool needleOn, bool drag = false}) => Expanded(
+  Widget _dial({required bool target, required bool needleOn, bool drag = false, List<(int, Color)> extra = const []}) => Expanded(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8),
           child: TapCanvas(
             w: 1000,
             h: 600,
-            paint: (c) => _paint(c, showTarget: target, showNeedle: needleOn),
+            paint: (c) => _paint(c, showTarget: target, showNeedle: needleOn, extra: extra),
             onTap: drag ? _drag : null,
             onPanStart: drag ? _drag : null,
             onPanUpdate: drag ? _drag : null,
@@ -643,17 +680,101 @@ class _HeatDialViewState extends State<HeatDialView> {
         ),
       );
 
+  Widget _buildAll(PSettings v) {
+    final colors = [for (var i = 0; i < v.count; i++) PColors.player(i)];
+    if (phase == 5) return FinalBoard(play: p, names: v.names, scores: pScores, colors: colors);
+    final status = t('round', {'n': round + 1, 'm': rounds});
+    final gc = PColors.player(giver);
+    if (phase == 0) {
+      return Column(children: [
+        PBar(status: status),
+        Expanded(child: PassGate(lang: p.lang, name: v.names[giver], color: gc, note: t('dialGiver'), onReady: () => setState(() => phase = 1))),
+      ]);
+    }
+    if (phase == 1) {
+      return Column(children: [
+        PBar(left: v.names[giver], status: status),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+          child: Text(t('dialGiver'), textAlign: TextAlign.center, style: const TextStyle(fontSize: 16)),
+        ),
+        _ends(),
+        _dial(target: true, needleOn: false),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
+          child: BigBtn(label: t('hide'), icon: Icons.visibility_off, color: gc, onTap: () => setState(() => phase = 6)),
+        ),
+      ]);
+    }
+    if (phase == 6) {
+      final gi = guessers[gIdx];
+      return Column(children: [
+        PBar(left: t('cluer', {'n': v.names[giver]}), status: status),
+        Expanded(child: PassGate(lang: p.lang, name: v.names[gi], color: colors[gi], note: t('dialYours'), onReady: () => setState(() => phase = 7))),
+      ]);
+    }
+    if (phase == 7) {
+      final gi = guessers[gIdx];
+      return Column(children: [
+        PBar(left: v.names[gi], status: status),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+          child: Text(t('dialYours'), textAlign: TextAlign.center, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
+        ),
+        _ends(),
+        _dial(target: false, needleOn: true, drag: true),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
+          child: BigBtn(label: t('lockIn'), icon: Icons.lock, color: colors[gi], onTap: _lockMine),
+        ),
+      ]);
+    }
+    return Column(children: [
+      PBar(status: status),
+      _ends(),
+      _dial(target: true, needleOn: false, extra: [for (final e in needles.entries) (e.value, colors[e.key])]),
+      SizedBox(
+        height: 150,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          child: ScoreList(names: v.names, scores: pScores, colors: colors, highlight: giver),
+        ),
+      ),
+      Padding(
+        padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
+        child: BigBtn(label: t('next'), icon: Icons.arrow_forward, color: PColors.good, onTap: _next),
+      ),
+    ]);
+  }
+
   @override
   Widget build(BuildContext context) {
     final v = s;
     if (v == null) {
-      return Lobby(
-        play: p,
-        spec: const LobbySpec(minP: 4, maxP: 12, defP: 4, teams: 2, age: true),
-        emoji: '🌡️',
-        onStart: _start,
-      );
+      Widget chip(int m, String key) => ChoiceChip(
+            label: Text(t(key), maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
+            selected: mode == m,
+            onSelected: (_) => setState(() => mode = m),
+          );
+      return Column(children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(8, 6, 8, 0),
+          child: Wrap(spacing: 8, runSpacing: 6, alignment: WrapAlignment.center, children: [chip(0, 'dialModeTeams'), chip(1, 'dialModeAll')]),
+        ),
+        Expanded(
+          child: Lobby(
+            key: ValueKey(mode),
+            play: p,
+            spec: mode == 1
+                ? const LobbySpec(minP: 3, maxP: 12, defP: 4, age: true)
+                : const LobbySpec(minP: 4, maxP: 12, defP: 4, teams: 2, age: true),
+            emoji: '🌡️',
+            onStart: _start,
+          ),
+        ),
+      ]);
     }
+    if (mode == 1) return _buildAll(v);
     final names = [t('team', {'n': 'A'}), t('team', {'n': 'B'})];
     if (phase == 5) return FinalBoard(play: p, names: names, scores: scores, colors: PColors.teams);
     final tc = PColors.teams[team];
