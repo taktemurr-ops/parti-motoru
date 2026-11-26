@@ -7,6 +7,7 @@ import 'package:studio_core/core/rng.dart';
 import 'package:studio_core/core/strings.dart';
 
 import '../core.dart';
+import '../studio_chrome.dart';
 import '../data/cards.dart';
 import '../data/party2.dart';
 import '../party.dart';
@@ -210,12 +211,12 @@ class _BombViewState extends State<BombView> {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
           decoration: BoxDecoration(
-            color: PColors.player(i).withValues(alpha: i == holder && phase == 1 ? 0.45 : 0.14),
+            color: PColors.player(i).withValues(alpha: i == holder && phase == 1 ? 0.45 : 0.18),
             borderRadius: BorderRadius.circular(14),
             border: Border.all(color: i == holder && phase == 1 ? PColors.bad : Colors.transparent, width: 2),
           ),
           child: Row(mainAxisSize: MainAxisSize.min, children: [
-            Text(v.names[i], style: TextStyle(fontWeight: FontWeight.w700, color: lives[i] > 0 ? PColors.ink : PColors.line)),
+            Text(v.names[i], style: TextStyle(fontWeight: FontWeight.w700, color: lives[i] > 0 ? Colors.white : Colors.white54)),
             const SizedBox(width: 6),
             _hearts(i),
           ]),
@@ -229,22 +230,18 @@ class _BombViewState extends State<BombView> {
       width: double.infinity,
       margin: const EdgeInsets.symmetric(horizontal: 16),
       padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: PColors.paper,
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: PColors.bad, width: 3),
-      ),
+      decoration: partyCard(context, edge: PColors.bad),
       child: Column(mainAxisSize: MainAxisSize.min, children: [
-        Text(t('bombSay'), style: const TextStyle(fontSize: 15, color: Color(0xFF7A6E5D))),
+        Text(t('bombSay'), style: const TextStyle(fontSize: 15, color: kStudioSubtle)),
         const SizedBox(height: 6),
         FittedBox(
           fit: BoxFit.scaleDown,
-          child: Text(category, style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w900, color: PColors.ink)),
+          child: Text(category, style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w900, color: Colors.white)),
         ),
         if (l != null) ...[
           const SizedBox(height: 8),
           Text(t('startsWith', {'n': l}),
-              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: PColors.bad)),
+              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: kPartyWarnText)),
         ],
       ]),
     );
@@ -434,11 +431,9 @@ class _FiveViewState extends State<FiveView> {
       width: double.infinity,
       margin: const EdgeInsets.symmetric(horizontal: 16),
       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 26),
-      decoration: BoxDecoration(
-        color: phase == 1 ? pc : PColors.paper,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: pc, width: 3),
-      ),
+      decoration: phase == 1
+          ? BoxDecoration(color: pc, borderRadius: BorderRadius.circular(24), border: Border.all(color: pc, width: 3))
+          : partyCard(context, edge: pc, radius: 24),
       child: phase == 1
           ? const Center(child: Text('❓', style: TextStyle(fontSize: 72)))
           : Column(mainAxisSize: MainAxisSize.min, children: [
@@ -449,10 +444,10 @@ class _FiveViewState extends State<FiveView> {
                 fit: BoxFit.scaleDown,
                 child: Text(topic,
                     textAlign: TextAlign.center,
-                    style: const TextStyle(fontSize: 34, fontWeight: FontWeight.w900, color: PColors.ink)),
+                    style: const TextStyle(fontSize: 34, fontWeight: FontWeight.w900, color: Colors.white)),
               ),
               const SizedBox(height: 10),
-              const Text('1 · 2 · 3', style: TextStyle(fontSize: 22, color: Color(0xFF7A6E5D))),
+              const Text('1 · 2 · 3', style: TextStyle(fontSize: 22, color: kStudioSubtle)),
             ]),
     );
     return Column(children: [
@@ -594,13 +589,9 @@ class _MostViewState extends State<MostView> {
         width: double.infinity,
         margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         padding: const EdgeInsets.all(18),
-        decoration: BoxDecoration(
-          color: PColors.paper,
-          borderRadius: BorderRadius.circular(22),
-          border: Border.all(color: PColors.warn, width: 3),
-        ),
+        decoration: partyCard(context, edge: PColors.warn),
         child: Text(question,
-            textAlign: TextAlign.center, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: PColors.ink)),
+            textAlign: TextAlign.center, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: Colors.white)),
       );
 
   @override

@@ -351,6 +351,20 @@ class _AskDialogState extends State<_AskDialog> {
       );
 }
 
+/// Parti kartı zemini (onaylı tasarım): paletin degradesi, renkli kenar.
+BoxDecoration partyCard(BuildContext context, {Color? edge, double radius = 22, double width = 3}) {
+  final look = StudioLook.of(context);
+  return BoxDecoration(
+    gradient: look.tile,
+    borderRadius: BorderRadius.circular(radius),
+    border: Border.all(color: edge ?? look.accent.withValues(alpha: 0.7), width: width),
+    boxShadow: [BoxShadow(color: (edge ?? look.accent).withValues(alpha: 0.25), blurRadius: 14, offset: const Offset(0, 4))],
+  );
+}
+
+/// Kart üstündeki uyarı / yasak yazısı rengi (koyu zeminde okunur kırmızı).
+const Color kPartyWarnText = Color(0xFFFF8A78);
+
 String teamLetter(int t) => t == 0 ? 'A' : 'B';
 
 /// Renkli zemin üstünde en okunur yazı rengi (beyaz ya da koyu mürekkep).
@@ -486,9 +500,9 @@ class BigBtn extends StatelessWidget {
         child: FittedBox(
           fit: BoxFit.scaleDown,
           child: Row(mainAxisSize: MainAxisSize.min, children: [
-            Icon(icon, size: 26),
+            Icon(icon, size: 26, color: onTap == null ? null : pOn(color)),
             const SizedBox(width: 8),
-            Text(label, style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w800)),
+            Text(label, style: TextStyle(fontSize: 19, fontWeight: FontWeight.w800, color: onTap == null ? null : pOn(color))),
           ]),
         ),
       ),
