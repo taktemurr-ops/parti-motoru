@@ -10,6 +10,7 @@ import 'package:studio_core/core/missions.dart';
 import 'package:studio_core/core/rng.dart';
 import 'package:studio_core/core/stats.dart';
 
+import 'identity.dart';
 import 'texts.dart';
 import 'studio_chrome.dart';
 
@@ -146,8 +147,12 @@ class PartiStage extends StatelessWidget {
 
   /// Motorun bütün arayüzü (paneller, pencereler, düğmeler) onaylı koyu
   /// tasarımda; tahta çizimleri kendi renklerini korur.
+  ///
+  /// Oyun alanı oyuna özgüdür (zemin tonu, desen ve panel vurgusu): aynı
+  /// motorun oyunları birbirinin kopyası gibi görünmez.
   @override
-  Widget build(BuildContext context) => StudioChrome(child: Builder(builder: _build));
+  Widget build(BuildContext context) =>
+      withGameIdentity(context, rules.gameId, StudioChrome(child: Builder(builder: _build)));
 
   Widget _build(BuildContext context) {
     final lv = ctx.generated.puzzle as PLevel;
