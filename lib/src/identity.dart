@@ -23,7 +23,18 @@ class GameSkin {
   double get _s => _h.saturation < 0.2 ? 0.35 : _h.saturation.clamp(0.35, 0.8);
 
   /// Oyun alanının zemin renkleri (koyu: paneller öne çıkar).
-  List<Color> get backdrop => [_c(_s * 0.8, 0.24, -10), _c(_s * 0.85, 0.14, -4), _c(_s * 0.9, 0.07)];
+  List<Color> get backdrop =>
+      [_dim(_c(_s * 0.8, 0.24, -10), 0.025), _dim(_c(_s * 0.85, 0.14, -4), 0.012), _dim(_c(_s * 0.9, 0.07), 0.005)];
+
+  /// Rengi, parlaklığı merkezin koyu zemini kadar olana dek karartır: açık
+  /// tonlu oyunlarda (sarı, camgöbeği) de yazılar ve takım renkleri okunur kalır.
+  static Color _dim(Color c, double maxLum) {
+    var o = c;
+    for (var i = 0; i < 20 && o.computeLuminance() > maxLum; i++) {
+      o = Color.lerp(o, Colors.black, 0.12)!;
+    }
+    return o;
+  }
 
   /// Desen çizgisi rengi.
   Color get ink => _c(_s, 0.78).withValues(alpha: 0.075);
